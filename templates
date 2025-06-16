@@ -1,1 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Controle Servo + LED RGB pela Web</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #fff;
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      width: 350px;
+      backdrop-filter: blur(10px);
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 30px;
+      font-weight: 700;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      font-size: 1.8rem;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 25px;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+      text-align: left;
+    }
+    input[type="range"], input[type="color"] {
+      width: 100%;
+      cursor: pointer;
+      border-radius: 8px;
+      height: 30px;
+      -webkit-appearance: none;
+      background: #ddd;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+    }
+    input[type="range"]:hover, input[type="color"]:hover {
+      background: #ccc;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #6a11cb;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      border: 2px solid #fff;
+      margin-top: -8px;
+      transition: background 0.3s ease;
+    }
+    input[type="range"]:hover::-webkit-slider-thumb {
+      background: #2575fc;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #6a11cb;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      border: 2px solid #fff;
+      transition: background 0.3s ease;
+    }
+    input[type="range"]:hover::-moz-range-thumb {
+      background: #2575fc;
+    }
+    #angleValue, #colorValue {
+      margin-top: 8px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      user-select: none;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Controle Servo + LED RGB</h1>
+
+    <label for="angleSlider">Ângulo do Servo (<span id="angleValue">90°</span>)</label>
+    <input type="range" id="angleSlider" min="0" max="180" value="90" />
+
+    <label for="colorPicker">Cor do LED RGB</label>
+    <input type="color" id="colorPicker" value="#ff0000" />
+    <div id="colorValue">#ff0000</div>
+  </div>
+
+  <script>
+    const angleSlider = document.getElementById('angleSlider');
+    const angleValue = document.getElementById('angleValue');
+    const colorPicker = document.getElementById('colorPicker');
+    const colorValue = document.getElementById('colorValue');
+
+    function sendData(data) {
+      fetch('/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(resp => console.log('Resposta do servidor:', resp))
+      .catch(err => console.error('Erro:', err));
+    }
+
+    angleSlider.addEventListener('input', () => {
+      const angle = angleSlider.value;
+      angleValue.textContent = `${angle}°`;
+      sendData({ servo_angle: parseInt(angle) });
+    });
+
+    colorPicker.addEventListener('input', () => {
+      const color = colorPicker.value;
+      colorValue.textContent = color;
+      // Converte HEX para RGB
+      const r = parseInt(color.substr(1,2), 16);
+      const g = parseInt(color.substr(3,2), 16);
+      const b = parseInt(color.substr(5,2), 16);
+      sendData({ led_r: r, led_g: g, led_b: b });
+    });
+  </script>
+</body>
+</html>
 
